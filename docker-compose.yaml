@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:16.2
+    restart: always
+    network_mode: bridge
+    volumes:
+      - ~/apps/postgres:/var/lib/postgresql/data
+    ports:
+      - '5431:5432'
+    environment:
+      POSTGRES_DB: talkzdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 112233
+  redis:
+    image: redis:7
+    restart: always
+    network_mode: bridge
+    ports:
+      - "6380:6379"
