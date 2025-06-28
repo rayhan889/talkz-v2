@@ -1,10 +1,7 @@
 package config
 
 import (
-	"fmt"
-
-	"github.com/joho/godotenv"
-	"github.com/rayhan889/talkz-v2/app/env"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
@@ -39,35 +36,40 @@ type AppConfig struct {
 	Version string
 }
 
-var Envs = initEnvs()
+var Envs = LoadConfig()
 
-func initEnvs() *Config {
-	err := godotenv.Load()
+func LoadConfig() *Config {
+	viper.AddConfigPath("../")
+	viper.SetConfigType("env")
+	viper.SetConfigFile(".env")
+	viper.AutomaticEnv()
+
+	err := viper.ReadInConfig()
 	if err != nil {
-		fmt.Printf("Error loading .env file: %v\n", err)
+		panic(err)
 	}
 
 	return &Config{
 		App: AppConfig{
-			Port:    env.GetString("PORT", ":8080"),
-			Env:     env.GetString("ENV", "development"),
-			Version: env.GetString("VERSION", "v1.0.0"),
+			Port:    viper.GetString("PORT"),
+			Env:     viper.GetString("ENV"),
+			Version: viper.GetString("VERSION"),
 		},
 		DB: DBConfig{
-			Address:      env.GetString("DB_ADDR", "postgres://postgres:112233@localhost:5431/talkzdb?sslmode=disable"),
-			MaxOpenConns: env.GetInt("DB_MAX_OPEN_CONNS", 10),
-			MaxIdleConns: env.GetInt("DB_MAX_IDLE_CONNS", 5),
-			MaxIdleTime:  env.GetString("DB_MAX_IDLE_TIME", "5m"),
+			Address:      viper.GetString("DB_ADDR"),
+			MaxOpenConns: viper.GetInt64("DB_MAX_OPEN_CONNS"),
+			MaxIdleConns: viper.GetInt64("DB_MAX_IDLE_CONNS"),
+			MaxIdleTime:  viper.GetString("DB_MAX_IDLE_TIME"),
 		},
 		Redis: RedisConfig{
-			Address:  env.GetString("REDIS_ADDR", "localhost:6379"),
-			Password: env.GetString("REDIS_PASSWORD", ""),
-			DB:       env.GetInt("REDIS_DB", 0),
-			Protocol: env.GetInt("REDIS_PROTOCOL", 2),
+			Address:  viper.GetString("REDIS_ADDR"),
+			Password: viper.GetString("REDIS_PASSWORD"),
+			DB:       viper.GetInt64("REDIS_DB"),
+			Protocol: viper.GetInt64("REDIS_PROTOCOL"),
 		},
 		JWT: JWTConfig{
-			Secret:  env.GetString("JWT_SECRET", "secret"),
-			Expires: env.GetInt("JWT_EXPIRATIONS_IN_SECOND", 3600),
+			Secret:  viper.GetString("JWT_SECRET"),
+			Expires: viper.GetInt64("JWT_EXPIRATIONS_IN_SECOND"),
 		},
 	}
 }
