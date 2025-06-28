@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/joho/godotenv"
-	"github.com/rayhan889/talkz-v2/internal/env"
+	"github.com/rayhan889/talkz-v2/app/env"
 )
 
 type Config struct {

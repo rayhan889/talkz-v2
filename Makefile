@@ -28,3 +28,7 @@ migrate-down:
 .PHONY: seed
 seed: 
 	@go run ./migrate/seed/main.go
+
+.PHONY: wire
+wire:
+	@bin/wire gen talkz-v2/app

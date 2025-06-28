@@ -1,17 +1,21 @@
 package main
 
 import (
+	"github.com/rayhan889/talkz-v2/app"
+	"github.com/rayhan889/talkz-v2/app/integrations/database"
 	"github.com/rayhan889/talkz-v2/config"
-	"github.com/rayhan889/talkz-v2/internal/db"
-	"github.com/rayhan889/talkz-v2/internal/server"
 	"github.com/rayhan889/talkz-v2/pkg/logger"
-	"github.com/rayhan889/talkz-v2/pkg/redis"
+	redisPkg "github.com/rayhan889/talkz-v2/pkg/redis"
+	"github.com/redis/go-redis/v9"
+	"gorm.io/gorm"
 )
 
-func main() {
+var db *gorm.DB
+var redisClient *redis.Client
+
+func init() {
 	appConf := config.AppConfig{
-		Port: config.Envs.App.Port,
-		Env:  config.Envs.App.Env,
+		Env: config.Envs.App.Env,
 	}
 
 	dbConf := config.DBConfig{
@@ -32,7 +36,7 @@ func main() {
 
 	logger.Log.Info("App Started")
 
-	db, err := db.New(
+	db, err := database.CreateConnection(
 		dbConf.Address,
 		int(dbConf.MaxOpenConns),
 		int(dbConf.MaxIdleConns),
@@ -47,16 +51,14 @@ func main() {
 	defer sqlDB.Close()
 	logger.Log.Info("Database connection established")
 
-	err = redis.InitRedisClient(redisConf.Address, redisConf.Password, int(redisConf.DB))
+	redisClient, err = redisPkg.InitRedisClient(redisConf.Address, redisConf.Password, int(redisConf.DB))
 	if err != nil {
 		logger.Log.Fatal(err)
 	}
 	logger.Log.Info("Redis client initialized")
+}
 
-	server := server.NewAPIServer(appConf.Port, db)
-	err = server.Start(appConf.Env)
-	if err != nil {
-		panic(err)
-	}
-
+func main() {
+	app := app.InitializeApp(db, redisClient)
+	app.Run()
 }

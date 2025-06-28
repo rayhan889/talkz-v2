@@ -1,4 +1,4 @@
-package health
+package controllers
 
 import (
 	"runtime"
@@ -11,7 +11,13 @@ import (
 	"github.com/rayhan889/talkz-v2/config"
 )
 
-func (h *HealthHandler) healthCheck(c *gin.Context) {
+type HealthController struct{}
+
+func NewHealthController() *HealthController {
+	return &HealthController{}
+}
+
+func (controller *HealthController) HealthCheck(c *gin.Context) {
 
 	version := config.Envs.App.Version
 
