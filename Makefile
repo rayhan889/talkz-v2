@@ -1,17 +1,26 @@
+include .env
+MIGRATIONS_PATH = ./migrate/migrations
+
+.PHONY: build
 build:
 	@go build -o bin/talkz-v2 cmd/main.go
 
+.PHONY: run
 run: build
 	@./bin/talkz-v2
 
+.PHONY: test
 test:
 	@go test -v ./...
 
+.PHONY: migrate-create
 migration:
-	@migrate create -ext sql -dir cmd/migrate/migrations $(filter-out $@,$(MAKECMDGOALS))
+	@migrate create -seq -ext sql -dir $(MIGRATIONS_PATH) $(filter-out $@,$(MAKECMDGOALS))
 
+.PHONY: migrate-up
 migrate-up:
-	@go run cmd/migrate/main.go up
+	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) up
 
+.PHONY: migrate-down
 migrate-down:
-	@go run cmd/migrate/main.go down
+	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) down $(filter-out $@,$(MAKECMDGOALS))
