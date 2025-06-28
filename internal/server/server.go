@@ -36,8 +36,12 @@ func (s *APIServer) Start(env string) error {
 
 	v1 := r.Group("/api/v1")
 
-	healthHanlder := health.NewHealthHandler()
-	healthHanlder.RegisterRoutes(v1)
+	s.bindRoutes(v1)
 
 	return r.Run(s.addr)
+}
+
+func (s *APIServer) bindRoutes(r *gin.RouterGroup) {
+	healthHanlder := health.NewHealthHandler()
+	healthHanlder.RegisterRoutes(r)
 }
