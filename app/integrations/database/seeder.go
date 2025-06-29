@@ -1,11 +1,11 @@
-package db
+package database
 
 import (
 	"log"
 	"time"
 
 	"github.com/go-faker/faker/v4"
-	"github.com/rayhan889/talkz-v2/internal/model"
+	"github.com/rayhan889/talkz-v2/app/models"
 	"github.com/rayhan889/talkz-v2/pkg/uuid"
 	"gorm.io/gorm"
 )
@@ -28,9 +28,9 @@ func Seeder(db *gorm.DB) error {
 }
 
 func (s *Seed) seedUsers() error {
-	var users []model.User
+	var users []models.User
 	for i := 0; i < 10; i++ {
-		user := model.User{
+		user := models.User{
 			ID:        uuid.GenerateUUID(),
 			Username:  faker.Username(),
 			Email:     faker.Email(),

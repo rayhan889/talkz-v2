@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
+	"github.com/rayhan889/talkz-v2/app/integrations/database"
 	"github.com/rayhan889/talkz-v2/config"
-	database "github.com/rayhan889/talkz-v2/internal/db"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 		MaxIdleConns: config.Envs.DB.MaxIdleConns,
 		MaxIdleTime:  config.Envs.DB.MaxIdleTime,
 	}
-	db, err := database.New(
+	db, err := database.CreateConnection(
 		dbConf.Address,
 		int(dbConf.MaxOpenConns),
 		int(dbConf.MaxIdleConns),

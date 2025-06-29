@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(addr string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*gorm.DB, error) {
+func CreateConnection(addr string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(addr), &gorm.Config{})
 	if err != nil {
 		return nil, err
