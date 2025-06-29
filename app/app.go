@@ -46,14 +46,15 @@ func (app *App) Run() {
 }
 
 func (app *App) registerRoutes(api *gin.RouterGroup) {
-	// authService := InitializeAuthService(app.DB)
+	authService := InitializeAuthService(app.DB)
 	// userService := InitializeUserService(app.DB)
 
 	healthController := InitializeHealthController()
-	// authController := InitializeAuthController(authService)
+	authController := InitializeAuthController(authService)
 	// userController := InitializeUserController(userService)
 
 	v1 := api.Group("/v1")
 
 	v1.GET("/health", healthController.HealthCheck)
+	v1.POST("/auth/register", authController.Register)
 }

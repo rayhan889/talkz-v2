@@ -14,6 +14,7 @@ var db *gorm.DB
 var redisClient *redis.Client
 
 func init() {
+	var err error
 	appConf := config.AppConfig{
 		Env: config.Envs.App.Env,
 	}
@@ -32,11 +33,10 @@ func init() {
 	}
 
 	logger.InitLogger(appConf.Env)
-	defer logger.Log.Sync()
 
 	logger.Log.Info("App Started")
 
-	db, err := database.CreateConnection(
+	db, err = database.CreateConnection(
 		dbConf.Address,
 		int(dbConf.MaxOpenConns),
 		int(dbConf.MaxIdleConns),
@@ -46,9 +46,6 @@ func init() {
 		logger.Log.Fatal(err)
 	}
 
-	sqlDB, _ := db.DB()
-
-	defer sqlDB.Close()
 	logger.Log.Info("Database connection established")
 
 	redisClient, err = redisPkg.InitRedisClient(redisConf.Address, redisConf.Password, int(redisConf.DB))
@@ -59,6 +56,10 @@ func init() {
 }
 
 func main() {
+	sqlDB, _ := db.DB()
+	defer sqlDB.Close()
+	defer logger.Log.Sync()
+
 	app := app.InitializeApp(db, redisClient)
 	app.Run()
 }
