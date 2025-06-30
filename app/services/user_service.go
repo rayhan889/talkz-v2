@@ -36,6 +36,10 @@ func (service *UserService) CreateUser(
 	return &user, nil
 }
 
+func (service *UserService) GetByEmail(email string) (*models.User, error) {
+	return service.userRepository.FindByEmail(email)
+}
+
 func (service *UserService) IsEmailExist(email string) bool {
 	_, err := service.userRepository.FindByEmail(email)
 

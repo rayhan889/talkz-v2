@@ -11,6 +11,7 @@ import (
 	"github.com/rayhan889/talkz-v2/app/http/requests"
 	"github.com/rayhan889/talkz-v2/app/http/responses"
 	"github.com/rayhan889/talkz-v2/app/services"
+	"github.com/rayhan889/talkz-v2/config"
 )
 
 type AuthController struct {
@@ -21,6 +22,44 @@ func NewAuthController(authService *services.AuthService) *AuthController {
 	return &AuthController{
 		authService: authService,
 	}
+}
+
+func (controller *AuthController) Login(c *gin.Context) {
+	loginRequest := new(requests.LoginRequest)
+
+	err := c.BindJSON(loginRequest)
+	if err != nil {
+		exceptions.BadRequestError(c, errors.New(constants.ErrorInvalidRequestBody))
+		return
+	}
+
+	errs := helpers.ValidateStruct(loginRequest)
+	if errs != nil {
+		exceptions.NewValidationError(c, errs, loginRequest)
+		return
+	}
+
+	token, err := controller.authService.Login(loginRequest)
+
+	if err != nil {
+		if err.Error() == constants.InvalidEmailOrPassword {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": constants.InvalidEmailOrPassword,
+				"errors":  err.Error(),
+			})
+			return
+		}
+		exceptions.InternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User logged in successfully",
+		"data": responses.TokenResponse{
+			AccessToken:          token,
+			AccessTokenExpiresIn: config.Envs.JWT.Expires,
+		},
+	})
 }
 
 func (controller *AuthController) Register(c *gin.Context) {
@@ -62,10 +101,6 @@ func (controller *AuthController) Register(c *gin.Context) {
 		},
 		"errors": nil,
 	})
-}
-
-func (controller *AuthController) Login(c *gin.Context) error {
-	return nil
 }
 
 func (controller *AuthController) Logout(c *gin.Context) error {

@@ -9,4 +9,8 @@ type (
 		Email     string    `json:"email"`
 		CreatedAt string    `json:"created_at"`
 	}
+	TokenResponse struct {
+		AccessToken          string `json:"access_token"`
+		AccessTokenExpiresIn int64  `json:"access_token_expires_in"`
+	}
 )
