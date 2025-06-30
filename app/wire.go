@@ -24,6 +24,18 @@ func InitializeUserRepository(db *gorm.DB) *repositories.UserRepository {
 	))
 }
 
+func InitializeBlogRepository(db *gorm.DB) *repositories.BlogRepository {
+	panic(wire.Build(
+		repositories.NewBlogRepository,
+	))
+}
+
+func InitializeRefreshTokenRepository(db *gorm.DB) *repositories.RefreshTokenRepository {
+	panic(wire.Build(
+		repositories.NewRefreshTokenRepository,
+	))
+}
+
 func InitializeUserService(db *gorm.DB) *services.UserService {
 	panic(wire.Build(
 		services.NewUserService,
@@ -31,16 +43,30 @@ func InitializeUserService(db *gorm.DB) *services.UserService {
 	))
 }
 
+func InitializeBlogService(db *gorm.DB) *services.BlogService {
+	panic(wire.Build(
+		services.NewBlogService,
+		InitializeBlogRepository,
+	))
+}
+
 func InitializeAuthService(db *gorm.DB) *services.AuthService {
 	panic(wire.Build(
 		services.NewAuthService,
 		InitializeUserService,
+		InitializeRefreshTokenRepository,
 	))
 }
 
 func InitializeUserController(userService *services.UserService) *controllers.UserController {
 	panic(wire.Build(
 		controllers.NewUserController,
+	))
+}
+
+func InitializeBlogController(blogService *services.BlogService) *controllers.BlogController {
+	panic(wire.Build(
+		controllers.NewBlogController,
 	))
 }
 

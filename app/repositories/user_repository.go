@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"github.com/rayhan889/talkz-v2/app/models"
-	"github.com/rayhan889/talkz-v2/pkg/logger"
 	"gorm.io/gorm"
 )
 
@@ -17,8 +16,18 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 }
 
 func (repo *UserRepository) Create(user *models.User) error {
-	logger.Log.Info("hit here in user repo")
 	return repo.db.Create(user).Error
+}
+
+func (repo *UserRepository) FindByID(id string) (*models.User, error) {
+	var user models.User
+
+	err := repo.db.Where("id = ?", id).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (repo *UserRepository) FindByEmail(email string) (*models.User, error) {

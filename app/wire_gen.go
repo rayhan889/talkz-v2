@@ -26,21 +26,43 @@ func InitializeUserRepository(db *gorm.DB) *repositories.UserRepository {
 	return userRepository
 }
 
+func InitializeBlogRepository(db *gorm.DB) *repositories.BlogRepository {
+	blogRepository := repositories.NewBlogRepository(db)
+	return blogRepository
+}
+
+func InitializeRefreshTokenRepository(db *gorm.DB) *repositories.RefreshTokenRepository {
+	refreshTokenRepository := repositories.NewRefreshTokenRepository(db)
+	return refreshTokenRepository
+}
+
 func InitializeUserService(db *gorm.DB) *services.UserService {
 	userRepository := InitializeUserRepository(db)
 	userService := services.NewUserService(userRepository)
 	return userService
 }
 
+func InitializeBlogService(db *gorm.DB) *services.BlogService {
+	blogRepository := InitializeBlogRepository(db)
+	blogService := services.NewBlogService(blogRepository)
+	return blogService
+}
+
 func InitializeAuthService(db *gorm.DB) *services.AuthService {
 	userService := InitializeUserService(db)
-	authService := services.NewAuthService(userService)
+	refreshTokenRepository := InitializeRefreshTokenRepository(db)
+	authService := services.NewAuthService(userService, refreshTokenRepository)
 	return authService
 }
 
 func InitializeUserController(userService *services.UserService) *controllers.UserController {
 	userController := controllers.NewUserController(userService)
 	return userController
+}
+
+func InitializeBlogController(blogService *services.BlogService) *controllers.BlogController {
+	blogController := controllers.NewBlogController(blogService)
+	return blogController
 }
 
 func InitializeAuthController(authService *services.AuthService) *controllers.AuthController {

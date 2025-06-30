@@ -10,7 +10,9 @@ import (
 	"github.com/rayhan889/talkz-v2/app/helpers"
 	"github.com/rayhan889/talkz-v2/app/http/requests"
 	"github.com/rayhan889/talkz-v2/app/http/responses"
+	"github.com/rayhan889/talkz-v2/app/models"
 	"github.com/rayhan889/talkz-v2/app/services"
+	"github.com/rayhan889/talkz-v2/config"
 )
 
 type AuthController struct {
@@ -21,6 +23,46 @@ func NewAuthController(authService *services.AuthService) *AuthController {
 	return &AuthController{
 		authService: authService,
 	}
+}
+
+func (controller *AuthController) Login(c *gin.Context) {
+	loginRequest := new(requests.LoginRequest)
+
+	err := c.BindJSON(loginRequest)
+	if err != nil {
+		exceptions.BadRequestError(c, errors.New(constants.ErrorInvalidRequestBody))
+		return
+	}
+
+	errs := helpers.ValidateStruct(loginRequest)
+	if errs != nil {
+		exceptions.NewValidationError(c, errs, loginRequest)
+		return
+	}
+
+	accessToken, refreshToken, err := controller.authService.Login(loginRequest)
+
+	if err != nil {
+		if err.Error() == constants.InvalidEmailOrPassword {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": constants.InvalidEmailOrPassword,
+				"errors":  err.Error(),
+			})
+			return
+		}
+		exceptions.InternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User logged in successfully",
+		"data": responses.TokenResponse{
+			AccessToken:           accessToken,
+			AccessTokenExpiresIn:  config.Envs.JWT.Expires,
+			RefreshToken:          refreshToken,
+			RefreshTokenExpiresIn: config.Envs.JWT.RefreshExpires,
+		},
+	})
 }
 
 func (controller *AuthController) Register(c *gin.Context) {
@@ -64,8 +106,66 @@ func (controller *AuthController) Register(c *gin.Context) {
 	})
 }
 
-func (controller *AuthController) Login(c *gin.Context) error {
-	return nil
+func (controller *AuthController) Refresh(c *gin.Context) {
+	refreshTokenRequest := new(requests.RefreshTokenRequest)
+
+	err := c.BindJSON(refreshTokenRequest)
+
+	if err != nil {
+		exceptions.BadRequestError(c, errors.New(constants.ErrorInvalidRequestBody))
+		return
+	}
+
+	errs := helpers.ValidateStruct(refreshTokenRequest)
+	if errs != nil {
+		exceptions.NewValidationError(c, errs, refreshTokenRequest)
+		return
+	}
+
+	accessToken, refreshToken, err := controller.authService.RefreshToken(refreshTokenRequest)
+
+	if err != nil {
+		if err.Error() == constants.RefreshTokenNotFound {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": constants.RefreshTokenNotFound,
+				"errors":  err.Error(),
+			})
+			return
+		}
+		if err.Error() == constants.RefreshTokenExpired {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": constants.RefreshTokenExpired,
+				"errors":  err.Error(),
+			})
+			return
+		}
+		exceptions.InternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Token refreshed",
+		"data": responses.TokenResponse{
+			AccessToken:           accessToken,
+			AccessTokenExpiresIn:  config.Envs.JWT.Expires,
+			RefreshToken:          refreshToken,
+			RefreshTokenExpiresIn: config.Envs.JWT.RefreshExpires,
+		},
+	})
+}
+
+func (controller *AuthController) User(c *gin.Context) {
+	user := c.MustGet("user").(*models.User)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User retrieved successfully",
+		"data": responses.LoggedUserResponse{
+			ID:       user.ID,
+			Username: user.Username,
+			Email:    user.Email,
+		},
+		"errors": nil,
+	})
 }
 
 func (controller *AuthController) Logout(c *gin.Context) error {
