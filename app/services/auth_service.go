@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 
+	"github.com/rayhan889/talkz-v2/app/constants"
 	"github.com/rayhan889/talkz-v2/app/http/requests"
 	"github.com/rayhan889/talkz-v2/app/models"
 	"github.com/rayhan889/talkz-v2/pkg/hash"
@@ -20,7 +21,7 @@ func NewAuthService(userService *UserService) *AuthService {
 
 func (service *AuthService) Register(request *requests.RegisterRequest) (*models.User, error) {
 	if service.userService.IsEmailExist(request.Email) {
-		return nil, errors.New("email already exists")
+		return nil, errors.New(constants.ErrorEmailAlreadyExists)
 	}
 
 	hash, err := hash.Make(request.Password)

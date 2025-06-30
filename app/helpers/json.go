@@ -1,6 +1,9 @@
 package helpers
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/rayhan889/talkz-v2/app/constants"
+)
 
 type SuccessResponse struct {
 	Message string      `json:"message"`
@@ -8,7 +11,7 @@ type SuccessResponse struct {
 }
 
 func WriteJSON(c *gin.Context, status int, data any) {
-	c.Header("Content-Type", "application/json")
+	c.Header("Content-Type", constants.JSONContentType)
 	c.JSON(status, data)
 }
 

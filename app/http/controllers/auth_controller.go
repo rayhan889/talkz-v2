@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rayhan889/talkz-v2/app/constants"
 	"github.com/rayhan889/talkz-v2/app/helpers"
 	"github.com/rayhan889/talkz-v2/app/http/requests"
 	"github.com/rayhan889/talkz-v2/app/http/responses"
@@ -28,9 +29,9 @@ func (controller *AuthController) Register(c *gin.Context) {
 	user, err := controller.authService.Register(registerRequst)
 
 	if err != nil {
-		if err.Error() == "email already exists" {
+		if err.Error() == constants.ErrorEmailAlreadyExists {
 			c.JSON(http.StatusConflict, gin.H{
-				"message": "Email already exists",
+				"message": constants.ErrorEmailAlreadyExists,
 				"errors":  err.Error(),
 			})
 			return
