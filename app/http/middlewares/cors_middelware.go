@@ -4,6 +4,8 @@ import (
 	"strings"
 	"time"
 
+	"slices"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/rayhan889/talkz-v2/config"
@@ -15,13 +17,18 @@ func CORS() gin.HandlerFunc {
 	exposeHeaders := strings.Split(config.Envs.Cors.ContentLength, ",")
 	maxAgeTime := time.Duration(config.Envs.Cors.MaxAge) * time.Hour
 
+	allowedOrigins := strings.Split(config.Envs.Cors.AllowOrigins, ",")
+	for i := range allowedOrigins {
+		allowedOrigins[i] = strings.TrimSpace(allowedOrigins[i])
+	}
+
 	return cors.New(cors.Config{
 		AllowMethods:     allowedMethods,
 		AllowHeaders:     allowedHeaders,
 		ExposeHeaders:    exposeHeaders,
 		AllowCredentials: config.Envs.Cors.AllowCredentials,
 		AllowOriginFunc: func(origin string) bool {
-			return strings.Contains(config.Envs.Cors.AllowOrigins, origin)
+			return slices.Contains(allowedOrigins, origin)
 		},
 		MaxAge: maxAgeTime,
 	})
