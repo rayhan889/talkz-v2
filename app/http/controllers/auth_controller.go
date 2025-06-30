@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rayhan889/talkz-v2/app/constants"
+	"github.com/rayhan889/talkz-v2/app/exceptions"
 	"github.com/rayhan889/talkz-v2/app/helpers"
 	"github.com/rayhan889/talkz-v2/app/http/requests"
 	"github.com/rayhan889/talkz-v2/app/http/responses"
@@ -24,7 +26,17 @@ func NewAuthController(authService *services.AuthService) *AuthController {
 func (controller *AuthController) Register(c *gin.Context) {
 	registerRequst := new(requests.RegisterRequest)
 
-	helpers.ValidateRequest(c, registerRequst)
+	err := c.BindJSON(registerRequst)
+	if err != nil {
+		exceptions.BadRequestError(c, errors.New(constants.ErrorInvalidRequestBody))
+		return
+	}
+
+	errs := helpers.ValidateStruct(registerRequst)
+	if errs != nil {
+		exceptions.NewValidationError(c, errs, registerRequst)
+		return
+	}
 
 	user, err := controller.authService.Register(registerRequst)
 
@@ -36,7 +48,7 @@ func (controller *AuthController) Register(c *gin.Context) {
 			})
 			return
 		}
-		helpers.InternalServerError(c, err)
+		exceptions.InternalServerError(c, err)
 		return
 	}
 
