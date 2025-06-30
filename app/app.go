@@ -28,6 +28,7 @@ func NewApp(db *gorm.DB, client *redis.Client) *App {
 
 	r.Use(middlewares.SecurityHeaders())
 	r.Use(middlewares.RateLimiter())
+	r.Use(middlewares.CORS())
 
 	return &App{
 		Gin:         r,

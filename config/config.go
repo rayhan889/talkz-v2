@@ -9,6 +9,7 @@ type Config struct {
 	DB    DBConfig
 	Redis RedisConfig
 	JWT   JWTConfig
+	Cors  CorsConfig
 }
 
 type DBConfig struct {
@@ -34,6 +35,15 @@ type AppConfig struct {
 	Port    string
 	Env     string
 	Version string
+}
+
+type CorsConfig struct {
+	AllowOrigins     string
+	AllowMethods     string
+	AllowHeaders     string
+	ContentLength    string
+	MaxAge           int
+	AllowCredentials bool
 }
 
 var Envs = LoadConfig()
@@ -70,6 +80,14 @@ func LoadConfig() *Config {
 		JWT: JWTConfig{
 			Secret:  viper.GetString("JWT_SECRET"),
 			Expires: viper.GetInt64("JWT_EXPIRATIONS_IN_SECOND"),
+		},
+		Cors: CorsConfig{
+			AllowOrigins:     viper.GetString("ALLOWED_ORIGINS"),
+			AllowMethods:     viper.GetString("ALLOWED_METHODS"),
+			AllowHeaders:     viper.GetString("ALLOWED_HEADERS"),
+			ContentLength:    viper.GetString("CONTENT_LENGTH"),
+			MaxAge:           viper.GetInt("MAX_AGE"),
+			AllowCredentials: viper.GetBool("ALLOW_CREDENTIALS"),
 		},
 	}
 }
