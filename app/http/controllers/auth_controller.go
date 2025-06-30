@@ -10,6 +10,7 @@ import (
 	"github.com/rayhan889/talkz-v2/app/helpers"
 	"github.com/rayhan889/talkz-v2/app/http/requests"
 	"github.com/rayhan889/talkz-v2/app/http/responses"
+	"github.com/rayhan889/talkz-v2/app/models"
 	"github.com/rayhan889/talkz-v2/app/services"
 	"github.com/rayhan889/talkz-v2/config"
 )
@@ -98,6 +99,20 @@ func (controller *AuthController) Register(c *gin.Context) {
 			Username:  user.Username,
 			Email:     user.Email,
 			CreatedAt: user.CreatedAt.String(),
+		},
+		"errors": nil,
+	})
+}
+
+func (controller *AuthController) User(c *gin.Context) {
+	user := c.MustGet("user").(*models.User)
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User retrieved successfully",
+		"data": responses.LoggedUserResponse{
+			ID:       user.ID,
+			Username: user.Username,
+			Email:    user.Email,
 		},
 		"errors": nil,
 	})

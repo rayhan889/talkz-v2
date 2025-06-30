@@ -59,4 +59,5 @@ func (app *App) registerRoutes(api *gin.RouterGroup) {
 	v1.GET("/health", healthController.HealthCheck)
 	v1.POST("/auth/register", authController.Register)
 	v1.POST("/auth/login", authController.Login)
+	v1.GET("/auth/user", middlewares.Authenticate(authService), authController.User)
 }

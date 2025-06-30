@@ -36,6 +36,10 @@ func (service *UserService) CreateUser(
 	return &user, nil
 }
 
+func (service *UserService) GetByID(id string) (*models.User, error) {
+	return service.userRepository.FindByID(id)
+}
+
 func (service *UserService) GetByEmail(email string) (*models.User, error) {
 	return service.userRepository.FindByEmail(email)
 }

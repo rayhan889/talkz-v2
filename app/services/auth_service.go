@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/rayhan889/talkz-v2/app/constants"
 	"github.com/rayhan889/talkz-v2/app/http/requests"
 	"github.com/rayhan889/talkz-v2/app/models"
 	"github.com/rayhan889/talkz-v2/config"
 	"github.com/rayhan889/talkz-v2/pkg/hash"
-	jwtPkg "github.com/rayhan889/talkz-v2/pkg/jwt"
 )
 
 type AuthService struct {
@@ -30,7 +30,7 @@ func (service *AuthService) Login(request *requests.LoginRequest) (string, error
 		return "", errors.New(constants.InvalidEmailOrPassword)
 	}
 
-	token, err := service.GenerateAccessToken(user.ID.String(), user.Username)
+	token, err := service.GenerateAccessToken(user.ID.String())
 
 	if err != nil {
 		return "", err
@@ -63,21 +63,17 @@ func (service *AuthService) Register(request *requests.RegisterRequest) (*models
 	return user, nil
 }
 
-func (service *AuthService) GenerateAccessToken(userId string, username string) (string, error) {
+func (service *AuthService) GenerateAccessToken(userId string) (string, error) {
 	expTime := time.Now().Add(time.Second * time.Duration(config.Envs.JWT.Expires)).Unix()
 	secretKey := []byte(config.Envs.JWT.Secret)
 
-	claims := jwtPkg.JWTClaims{
-		UserID:   userId,
-		Username: username,
-		MapClaims: jwt.MapClaims{
-			"sub": userId,
-			"iat": time.Now().Unix(),
-			"nbf": time.Now().Unix(),
-			"exp": expTime,
-			"iss": "talkz-v2",
-			"aud": "talkz-v2",
-		},
+	claims := jwt.MapClaims{
+		"sub": userId,
+		"iat": time.Now().Unix(),
+		"nbf": time.Now().Unix(),
+		"exp": expTime,
+		"iss": "talkz-v2",
+		"aud": "talkz-v2",
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -88,4 +84,36 @@ func (service *AuthService) GenerateAccessToken(userId string, username string) 
 	}
 
 	return tokenString, nil
+}
+
+func (service *AuthService) ValidateAccessToken(token string) (*models.User, error) {
+	jwtToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New(constants.InvalidAccessTokenSigningMethod)
+		}
+
+		return []byte(config.Envs.JWT.Secret), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := jwtToken.Claims.(jwt.MapClaims); ok && jwtToken.Valid {
+		userId, err := uuid.Parse(claims["sub"].(string))
+
+		if err != nil {
+			return nil, err
+		}
+
+		user, err := service.userService.GetByID(userId.String())
+
+		if err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	}
+
+	return nil, errors.New("invalid access token")
 }

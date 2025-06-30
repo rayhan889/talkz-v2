@@ -13,4 +13,9 @@ type (
 		AccessToken          string `json:"access_token"`
 		AccessTokenExpiresIn int64  `json:"access_token_expires_in"`
 	}
+	LoggedUserResponse struct {
+		ID       uuid.UUID `json:"id"`
+		Username string    `json:"username"`
+		Email    string    `json:"email"`
+	}
 )
