@@ -31,4 +31,4 @@ seed:
 
 .PHONY: wire
 wire:
-	@bin/wire gen talkz-v2/app
+	@wire gen github.com/rayhan889/talkz-v2/app
