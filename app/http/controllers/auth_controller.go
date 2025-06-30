@@ -40,7 +40,7 @@ func (controller *AuthController) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := controller.authService.Login(loginRequest)
+	accessToken, refreshToken, err := controller.authService.Login(loginRequest)
 
 	if err != nil {
 		if err.Error() == constants.InvalidEmailOrPassword {
@@ -57,8 +57,10 @@ func (controller *AuthController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User logged in successfully",
 		"data": responses.TokenResponse{
-			AccessToken:          token,
-			AccessTokenExpiresIn: config.Envs.JWT.Expires,
+			AccessToken:           accessToken,
+			AccessTokenExpiresIn:  config.Envs.JWT.Expires,
+			RefreshToken:          refreshToken,
+			RefreshTokenExpiresIn: config.Envs.JWT.RefreshExpires,
 		},
 	})
 }
@@ -101,6 +103,54 @@ func (controller *AuthController) Register(c *gin.Context) {
 			CreatedAt: user.CreatedAt.String(),
 		},
 		"errors": nil,
+	})
+}
+
+func (controller *AuthController) Refresh(c *gin.Context) {
+	refreshTokenRequest := new(requests.RefreshTokenRequest)
+
+	err := c.BindJSON(refreshTokenRequest)
+
+	if err != nil {
+		exceptions.BadRequestError(c, errors.New(constants.ErrorInvalidRequestBody))
+		return
+	}
+
+	errs := helpers.ValidateStruct(refreshTokenRequest)
+	if errs != nil {
+		exceptions.NewValidationError(c, errs, refreshTokenRequest)
+		return
+	}
+
+	accessToken, refreshToken, err := controller.authService.RefreshToken(refreshTokenRequest)
+
+	if err != nil {
+		if err.Error() == constants.RefreshTokenNotFound {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": constants.RefreshTokenNotFound,
+				"errors":  err.Error(),
+			})
+			return
+		}
+		if err.Error() == constants.RefreshTokenExpired {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"message": constants.RefreshTokenExpired,
+				"errors":  err.Error(),
+			})
+			return
+		}
+		exceptions.InternalServerError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Token refreshed",
+		"data": responses.TokenResponse{
+			AccessToken:           accessToken,
+			AccessTokenExpiresIn:  config.Envs.JWT.Expires,
+			RefreshToken:          refreshToken,
+			RefreshTokenExpiresIn: config.Envs.JWT.RefreshExpires,
+		},
 	})
 }
 

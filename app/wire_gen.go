@@ -31,6 +31,11 @@ func InitializeBlogRepository(db *gorm.DB) *repositories.BlogRepository {
 	return blogRepository
 }
 
+func InitializeRefreshTokenRepository(db *gorm.DB) *repositories.RefreshTokenRepository {
+	refreshTokenRepository := repositories.NewRefreshTokenRepository(db)
+	return refreshTokenRepository
+}
+
 func InitializeUserService(db *gorm.DB) *services.UserService {
 	userRepository := InitializeUserRepository(db)
 	userService := services.NewUserService(userRepository)
@@ -45,7 +50,8 @@ func InitializeBlogService(db *gorm.DB) *services.BlogService {
 
 func InitializeAuthService(db *gorm.DB) *services.AuthService {
 	userService := InitializeUserService(db)
-	authService := services.NewAuthService(userService)
+	refreshTokenRepository := InitializeRefreshTokenRepository(db)
+	authService := services.NewAuthService(userService, refreshTokenRepository)
 	return authService
 }
 

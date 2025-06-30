@@ -27,8 +27,9 @@ type RedisConfig struct {
 }
 
 type JWTConfig struct {
-	Secret  string
-	Expires int64
+	Secret         string
+	Expires        int64
+	RefreshExpires int64
 }
 
 type AppConfig struct {
@@ -78,8 +79,9 @@ func LoadConfig() *Config {
 			Protocol: viper.GetInt64("REDIS_PROTOCOL"),
 		},
 		JWT: JWTConfig{
-			Secret:  viper.GetString("JWT_SECRET"),
-			Expires: viper.GetInt64("JWT_EXPIRATIONS_IN_SECOND"),
+			Secret:         viper.GetString("JWT_SECRET"),
+			Expires:        viper.GetInt64("JWT_EXPIRATIONS_IN_SECOND"),
+			RefreshExpires: viper.GetInt64("REFRESH_TOKEN_EXPIRATIONS_IN_SECOND"),
 		},
 		Cors: CorsConfig{
 			AllowOrigins:     viper.GetString("ALLOWED_ORIGINS"),
