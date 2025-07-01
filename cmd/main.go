@@ -7,11 +7,13 @@ import (
 	"github.com/rayhan889/talkz-v2/pkg/logger"
 	redisPkg "github.com/rayhan889/talkz-v2/pkg/redis"
 	"github.com/redis/go-redis/v9"
+	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
 var redisClient *redis.Client
+var dialer *gomail.Dialer
 
 func init() {
 	var err error
@@ -31,6 +33,20 @@ func init() {
 		Password: config.Envs.Redis.Password,
 		DB:       config.Envs.Redis.DB,
 	}
+
+	mailConfig := config.MailConfig{
+		SMTPHost:     config.Envs.Mail.SMTPHost,
+		SMTPPort:     config.Envs.Mail.SMTPPort,
+		SenderEmail:  config.Envs.Mail.SenderEmail,
+		SMTPPassword: config.Envs.Mail.SMTPPassword,
+	}
+
+	dialer = gomail.NewDialer(
+		mailConfig.SMTPHost,
+		mailConfig.SMTPPort,
+		mailConfig.SenderEmail,
+		mailConfig.SMTPPassword,
+	)
 
 	logger.InitLogger(appConf.Env)
 
@@ -60,6 +76,6 @@ func main() {
 	defer sqlDB.Close()
 	defer logger.Log.Sync()
 
-	app := app.InitializeApp(db, redisClient)
+	app := app.InitializeApp(db, redisClient, dialer)
 	app.Run()
 }

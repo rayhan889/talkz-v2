@@ -11,13 +11,14 @@ import (
 	"github.com/rayhan889/talkz-v2/app/repositories"
 	"github.com/rayhan889/talkz-v2/app/services"
 	"github.com/redis/go-redis/v9"
+	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
 )
 
 // Injectors from wire.go:
 
-func InitializeApp(db *gorm.DB, client *redis.Client) *App {
-	app := NewApp(db, client)
+func InitializeApp(db *gorm.DB, client *redis.Client, dialer *gomail.Dialer) *App {
+	app := NewApp(db, client, dialer)
 	return app
 }
 
@@ -42,16 +43,22 @@ func InitializeUserService(db *gorm.DB) *services.UserService {
 	return userService
 }
 
-func InitializeBlogService(db *gorm.DB) *services.BlogService {
+func InitializeBlogService(db *gorm.DB, redis2 *redis.Client) *services.BlogService {
 	blogRepository := InitializeBlogRepository(db)
-	blogService := services.NewBlogService(blogRepository)
+	blogService := services.NewBlogService(blogRepository, redis2)
 	return blogService
 }
 
-func InitializeAuthService(db *gorm.DB) *services.AuthService {
+func InitializeMailService(dialer *gomail.Dialer) *services.MailService {
+	mailService := services.NewMailService(dialer)
+	return mailService
+}
+
+func InitializeAuthService(db *gorm.DB, dialer *gomail.Dialer) *services.AuthService {
 	userService := InitializeUserService(db)
+	mailService := InitializeMailService(dialer)
 	refreshTokenRepository := InitializeRefreshTokenRepository(db)
-	authService := services.NewAuthService(userService, refreshTokenRepository)
+	authService := services.NewAuthService(userService, mailService, refreshTokenRepository)
 	return authService
 }
 

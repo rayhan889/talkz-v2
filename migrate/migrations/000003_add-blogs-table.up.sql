@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS blogs (
+    id UUID PRIMARY KEY,
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    content TEXT NOT NULL,
+    author_id UUID NOT NULL,
+    created_at   TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+)
