@@ -11,18 +11,26 @@ import (
 	"github.com/rayhan889/talkz-v2/app/http/requests"
 	"github.com/rayhan889/talkz-v2/app/models"
 	"github.com/rayhan889/talkz-v2/app/repositories"
+	"github.com/rayhan889/talkz-v2/app/resources"
 	"github.com/rayhan889/talkz-v2/config"
 	"github.com/rayhan889/talkz-v2/pkg/hash"
+	"github.com/rayhan889/talkz-v2/pkg/logger"
 )
 
 type AuthService struct {
 	userService            *UserService
+	mailService            *MailService
 	refreshTokenRepository *repositories.RefreshTokenRepository
 }
 
-func NewAuthService(userService *UserService, refreshTokenRepository *repositories.RefreshTokenRepository) *AuthService {
+func NewAuthService(
+	userService *UserService,
+	mailService *MailService,
+	refreshTokenRepository *repositories.RefreshTokenRepository,
+) *AuthService {
 	return &AuthService{
 		userService:            userService,
+		mailService:            mailService,
 		refreshTokenRepository: refreshTokenRepository,
 	}
 }
@@ -67,6 +75,21 @@ func (service *AuthService) Register(request *requests.RegisterRequest) (*models
 		request.Email,
 		hash,
 	)
+
+	go func() {
+		err := service.mailService.SendMail(
+			"rynatmadja890@gmail.com",
+			"Welcome to Talkz",
+			resources.WelcomeEmailTemplate,
+			map[string]interface{}{
+				"Username": user.Username,
+			},
+		)
+		if err != nil {
+			logger.Log.Errorf("Failed to send welcome email: ", err)
+			return
+		}
+	}()
 
 	if err != nil {
 		return nil, err

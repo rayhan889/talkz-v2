@@ -10,6 +10,7 @@ type Config struct {
 	Redis RedisConfig
 	JWT   JWTConfig
 	Cors  CorsConfig
+	Mail  MailConfig
 }
 
 type DBConfig struct {
@@ -45,6 +46,14 @@ type CorsConfig struct {
 	ContentLength    string
 	MaxAge           int
 	AllowCredentials bool
+}
+
+type MailConfig struct {
+	SMTPHost     string
+	SMTPPort     int
+	SenderName   string
+	SenderEmail  string
+	SMTPPassword string
 }
 
 var Envs = LoadConfig()
@@ -90,6 +99,13 @@ func LoadConfig() *Config {
 			ContentLength:    viper.GetString("CONTENT_LENGTH"),
 			MaxAge:           viper.GetInt("MAX_AGE"),
 			AllowCredentials: viper.GetBool("ALLOW_CREDENTIALS"),
+		},
+		Mail: MailConfig{
+			SMTPHost:     viper.GetString("STMP_HOST"),
+			SMTPPort:     viper.GetInt("STMP_PORT"),
+			SenderName:   viper.GetString("SENDER_NAME"),
+			SenderEmail:  viper.GetString("SENDER_EMAIL"),
+			SMTPPassword: viper.GetString("STMP_PASSWORD"),
 		},
 	}
 }

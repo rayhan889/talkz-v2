@@ -9,10 +9,11 @@ import (
 	"github.com/rayhan889/talkz-v2/app/repositories"
 	"github.com/rayhan889/talkz-v2/app/services"
 	"github.com/redis/go-redis/v9"
+	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
 )
 
-func InitializeApp(db *gorm.DB, client *redis.Client) *App {
+func InitializeApp(db *gorm.DB, client *redis.Client, dialer *gomail.Dialer) *App {
 	panic(wire.Build(
 		NewApp,
 	))
@@ -50,10 +51,17 @@ func InitializeBlogService(db *gorm.DB) *services.BlogService {
 	))
 }
 
-func InitializeAuthService(db *gorm.DB) *services.AuthService {
+func InitializeMailService(dialer *gomail.Dialer) *services.MailService {
+	panic(wire.Build(
+		services.NewMailService,
+	))
+}
+
+func InitializeAuthService(db *gorm.DB, dialer *gomail.Dialer) *services.AuthService {
 	panic(wire.Build(
 		services.NewAuthService,
 		InitializeUserService,
+		InitializeMailService,
 		InitializeRefreshTokenRepository,
 	))
 }
