@@ -25,6 +25,7 @@ type RedisConfig struct {
 	Password string
 	DB       int64
 	Protocol int64
+	Duration int64
 }
 
 type JWTConfig struct {
@@ -86,6 +87,7 @@ func LoadConfig() *Config {
 			Password: viper.GetString("REDIS_PASSWORD"),
 			DB:       viper.GetInt64("REDIS_DB"),
 			Protocol: viper.GetInt64("REDIS_PROTOCOL"),
+			Duration: viper.GetInt64("REDIS_DURATION"),
 		},
 		JWT: JWTConfig{
 			Secret:         viper.GetString("JWT_SECRET"),

@@ -43,9 +43,9 @@ func InitializeUserService(db *gorm.DB) *services.UserService {
 	return userService
 }
 
-func InitializeBlogService(db *gorm.DB) *services.BlogService {
+func InitializeBlogService(db *gorm.DB, redis2 *redis.Client) *services.BlogService {
 	blogRepository := InitializeBlogRepository(db)
-	blogService := services.NewBlogService(blogRepository)
+	blogService := services.NewBlogService(blogRepository, redis2)
 	return blogService
 }
 

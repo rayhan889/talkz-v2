@@ -19,6 +19,18 @@ func (repo *BlogRepository) Create(blog *models.Blog) error {
 	return repo.db.Create(blog).Error
 }
 
+func (repo *BlogRepository) FindAll() ([]models.Blog, error) {
+	var blogs []models.Blog
+
+	err := repo.db.Limit(5).Order("created_at DESC").Find(&blogs).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return blogs, nil
+}
+
 func (repo *BlogRepository) FindBySlug(slug string) ([]models.Blog, error) {
 	var blogs []models.Blog
 

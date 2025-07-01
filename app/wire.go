@@ -44,7 +44,7 @@ func InitializeUserService(db *gorm.DB) *services.UserService {
 	))
 }
 
-func InitializeBlogService(db *gorm.DB) *services.BlogService {
+func InitializeBlogService(db *gorm.DB, redis *redis.Client) *services.BlogService {
 	panic(wire.Build(
 		services.NewBlogService,
 		InitializeBlogRepository,

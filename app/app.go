@@ -52,7 +52,7 @@ func (app *App) Run() {
 func (app *App) registerRoutes(api *gin.RouterGroup) {
 	authService := InitializeAuthService(app.DB, app.Dialer)
 	// userService := InitializeUserService(app.DB)
-	blogService := InitializeBlogService(app.DB)
+	blogService := InitializeBlogService(app.DB, app.RedisClient)
 
 	healthController := InitializeHealthController()
 	authController := InitializeAuthController(authService)
@@ -68,5 +68,6 @@ func (app *App) registerRoutes(api *gin.RouterGroup) {
 	v1.GET("/auth/user", middlewares.Authenticate(authService), authController.User)
 	v1.POST("/auth/refresh", authController.Refresh)
 
+	v1.GET("/blogs/feeds", middlewares.Authenticate(authService), blogController.Feeds)
 	v1.POST("/blogs/compose", middlewares.Authenticate(authService), blogController.Compose)
 }

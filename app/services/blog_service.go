@@ -1,24 +1,80 @@
 package services
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/google/uuid"
 	"github.com/rayhan889/talkz-v2/app/models"
 	"github.com/rayhan889/talkz-v2/app/repositories"
+	"github.com/rayhan889/talkz-v2/config"
 	"github.com/rayhan889/talkz-v2/pkg/logger"
+	"github.com/redis/go-redis/v9"
 )
 
 type BlogService struct {
 	blogRepostiory *repositories.BlogRepository
+	redis          *redis.Client
 }
 
-func NewBlogService(blogRepostiory *repositories.BlogRepository) *BlogService {
+func NewBlogService(blogRepostiory *repositories.BlogRepository, redis *redis.Client) *BlogService {
 	return &BlogService{
 		blogRepostiory: blogRepostiory,
+		redis:          redis,
 	}
+}
+
+func (service *BlogService) GetFeeds() ([]models.Blog, error) {
+	blogs, err := service.blogRepostiory.FindAll()
+
+	if err != nil {
+		return nil, err
+	}
+
+	cachedBlogs, err := service.GetCachedBlogs("blogs:feed")
+	if err == nil && len(cachedBlogs) > 0 {
+		return cachedBlogs, nil
+	}
+
+	service.SetCacheBlogs(blogs, "blogs:feed")
+
+	return blogs, nil
+}
+
+func (service *BlogService) GetCachedBlogs(key string) ([]models.Blog, error) {
+	val, err := service.redis.Get(context.Background(), key).Result()
+
+	if err == redis.Nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	var blogs []models.Blog
+	if err := json.Unmarshal([]byte(val), &blogs); err != nil {
+		return nil, err
+	}
+
+	return blogs, nil
+}
+
+func (service *BlogService) SetCacheBlogs(blogs []models.Blog, key string) error {
+	data, err := json.Marshal(blogs)
+
+	if err != nil {
+		return err
+	}
+
+	ttl := time.Duration(config.Envs.Redis.Duration) * time.Minute
+	service.redis.Set(context.Background(), key, data, ttl)
+
+	return nil
 }
 
 func (service *BlogService) CreateBlog(
@@ -45,6 +101,12 @@ func (service *BlogService) CreateBlog(
 	if err != nil {
 		return nil, err
 	}
+
+	go func() {
+		if err := service.redis.Del(context.Background(), "blogs:feed").Err(); err != nil {
+			logger.Log.Errorf("Failed to invalidate blogs:feed cache: %v", err)
+		}
+	}()
 
 	return &blog, nil
 }

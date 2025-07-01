@@ -24,6 +24,33 @@ func NewBlogController(blogService *services.BlogService) *BlogController {
 	}
 }
 
+func (controller *BlogController) Feeds(c *gin.Context) {
+	blogs, err := controller.blogService.GetFeeds()
+
+	if err != nil {
+		exceptions.InternalServerError(c, err)
+		return
+	}
+
+	blogResponses := make([]responses.BlogResponse, len(blogs))
+	for i, blog := range blogs {
+		blogResponses[i] = responses.BlogResponse{
+			Title:     blog.Title,
+			Content:   blog.Content,
+			Author:    blog.AuthorID.String(),
+			CreatedAt: blog.CreatedAt,
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Blogs fetched successfully",
+		"data": responses.BlogsResponse{
+			Blogs: blogResponses,
+		},
+		"errors": nil,
+	})
+}
+
 func (controller *BlogController) Compose(c *gin.Context) {
 	user := c.MustGet("user").(*models.User)
 
