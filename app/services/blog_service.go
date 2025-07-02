@@ -31,21 +31,28 @@ func NewBlogService(blogRepostiory *repositories.BlogRepository, redis *redis.Cl
 
 var ctx = context.Background()
 
-func (service *BlogService) GetFeeds() ([]models.Blog, error) {
-	blogs, err := service.blogRepostiory.FindAll()
+func (service *BlogService) GetFeeds(page, limit int) ([]models.Blog, int, error) {
+	blogs, err := service.GetCachedBlogs(constants.FeedCacheKey)
 
-	if err != nil {
-		return nil, err
+	if err != nil && len(blogs) == 0 {
+		blogs, err = service.blogRepostiory.FindAll()
+		if err != nil {
+			return nil, 0, err
+		}
+		service.SetCacheBlogs(blogs, constants.FeedCacheKey)
 	}
 
-	cachedBlogs, err := service.GetCachedBlogs(constants.FeedCacheKey)
-	if err == nil && len(cachedBlogs) > 0 {
-		return cachedBlogs, nil
+	start := (page - 1) * limit
+	if start >= len(blogs) {
+		return []models.Blog{}, 0, nil
 	}
 
-	service.SetCacheBlogs(blogs, constants.FeedCacheKey)
+	end := start + limit
+	if end > len(blogs) {
+		end = len(blogs)
+	}
 
-	return blogs, nil
+	return blogs[start:end], len(blogs), nil
 }
 
 func (service *BlogService) GetCachedBlogs(key string) ([]models.Blog, error) {
