@@ -12,12 +12,12 @@ import (
 )
 
 func CORS() gin.HandlerFunc {
-	allowedHeaders := strings.Split(config.Envs.Cors.AllowHeaders, ",")
-	allowedMethods := strings.Split(config.Envs.Cors.AllowMethods, ",")
-	exposeHeaders := strings.Split(config.Envs.Cors.ContentLength, ",")
-	maxAgeTime := time.Duration(config.Envs.Cors.MaxAge) * time.Hour
+	allowedHeaders := strings.Split(config.Cors.AllowHeaders, ",")
+	allowedMethods := strings.Split(config.Cors.AllowMethods, ",")
+	exposeHeaders := strings.Split(config.Cors.ContentLength, ",")
+	maxAgeTime := time.Duration(config.Cors.MaxAge) * time.Hour
 
-	allowedOrigins := strings.Split(config.Envs.Cors.AllowOrigins, ",")
+	allowedOrigins := strings.Split(config.Cors.AllowOrigins, ",")
 	for i := range allowedOrigins {
 		allowedOrigins[i] = strings.TrimSpace(allowedOrigins[i])
 	}
@@ -26,7 +26,7 @@ func CORS() gin.HandlerFunc {
 		AllowMethods:     allowedMethods,
 		AllowHeaders:     allowedHeaders,
 		ExposeHeaders:    exposeHeaders,
-		AllowCredentials: config.Envs.Cors.AllowCredentials,
+		AllowCredentials: config.Cors.AllowCredentials,
 		AllowOriginFunc: func(origin string) bool {
 			return slices.Contains(allowedOrigins, origin)
 		},

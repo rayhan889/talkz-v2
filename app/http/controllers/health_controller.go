@@ -19,7 +19,7 @@ func NewHealthController() *HealthController {
 
 func (controller *HealthController) HealthCheck(c *gin.Context) {
 
-	version := config.Envs.App.Version
+	version := config.App.Version
 
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
@@ -34,7 +34,7 @@ func (controller *HealthController) HealthCheck(c *gin.Context) {
 		Timeout:   time.Second * 2,
 		SkipOnErr: false,
 		Check: healthPostgres.New(healthPostgres.Config{
-			DSN: config.Envs.DB.Address,
+			DSN: config.DB.Address,
 		}),
 	})
 
@@ -43,7 +43,7 @@ func (controller *HealthController) HealthCheck(c *gin.Context) {
 		Timeout:   time.Second * 2,
 		SkipOnErr: true,
 		Check: healthRedis.New(healthRedis.Config{
-			DSN: config.Envs.Redis.Address,
+			DSN: config.Redis.Address,
 		}),
 	})
 

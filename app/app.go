@@ -17,7 +17,7 @@ type App struct {
 }
 
 func NewApp(db *gorm.DB, client *redis.Client, dialer *gomail.Dialer) *App {
-	if config.Envs.App.Env == "production" {
+	if config.App.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	} else {
 		gin.SetMode(gin.DebugMode)

@@ -81,7 +81,7 @@ func (service *BlogService) SetCacheBlogs(blogs []models.Blog, key string) error
 		return err
 	}
 
-	ttl := time.Duration(config.Envs.Redis.Duration) * time.Minute
+	ttl := time.Duration(config.Redis.Duration) * time.Minute
 	service.redis.Set(ctx, key, data, ttl)
 
 	return nil

@@ -4,15 +4,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Config struct {
-	App   AppConfig
-	DB    DBConfig
-	Redis RedisConfig
-	JWT   JWTConfig
-	Cors  CorsConfig
-	Mail  MailConfig
-}
-
 type DBConfig struct {
 	Address      string
 	MaxOpenConns int64
@@ -57,9 +48,15 @@ type MailConfig struct {
 	SMTPPassword string
 }
 
-var Envs = LoadConfig()
+// var Envs = LoadConfig()
+var App *AppConfig
+var DB *DBConfig
+var Redis *RedisConfig
+var JWT *JWTConfig
+var Cors *CorsConfig
+var Mail *MailConfig
 
-func LoadConfig() *Config {
+func LoadConfig() error {
 	viper.AddConfigPath("../")
 	viper.SetConfigType("env")
 	viper.SetConfigFile(".env")
@@ -67,47 +64,46 @@ func LoadConfig() *Config {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	return &Config{
-		App: AppConfig{
-			Port:    viper.GetString("PORT"),
-			Env:     viper.GetString("ENV"),
-			Version: viper.GetString("VERSION"),
-		},
-		DB: DBConfig{
-			Address:      viper.GetString("DB_ADDR"),
-			MaxOpenConns: viper.GetInt64("DB_MAX_OPEN_CONNS"),
-			MaxIdleConns: viper.GetInt64("DB_MAX_IDLE_CONNS"),
-			MaxIdleTime:  viper.GetString("DB_MAX_IDLE_TIME"),
-		},
-		Redis: RedisConfig{
-			Address:  viper.GetString("REDIS_ADDR"),
-			Password: viper.GetString("REDIS_PASSWORD"),
-			DB:       viper.GetInt64("REDIS_DB"),
-			Protocol: viper.GetInt64("REDIS_PROTOCOL"),
-			Duration: viper.GetInt64("REDIS_DURATION"),
-		},
-		JWT: JWTConfig{
-			Secret:         viper.GetString("JWT_SECRET"),
-			Expires:        viper.GetInt64("JWT_EXPIRATIONS_IN_SECOND"),
-			RefreshExpires: viper.GetInt64("REFRESH_TOKEN_EXPIRATIONS_IN_SECOND"),
-		},
-		Cors: CorsConfig{
-			AllowOrigins:     viper.GetString("ALLOWED_ORIGINS"),
-			AllowMethods:     viper.GetString("ALLOWED_METHODS"),
-			AllowHeaders:     viper.GetString("ALLOWED_HEADERS"),
-			ContentLength:    viper.GetString("CONTENT_LENGTH"),
-			MaxAge:           viper.GetInt("MAX_AGE"),
-			AllowCredentials: viper.GetBool("ALLOW_CREDENTIALS"),
-		},
-		Mail: MailConfig{
-			SMTPHost:     viper.GetString("STMP_HOST"),
-			SMTPPort:     viper.GetInt("STMP_PORT"),
-			SenderName:   viper.GetString("SENDER_NAME"),
-			SenderEmail:  viper.GetString("SENDER_EMAIL"),
-			SMTPPassword: viper.GetString("STMP_PASSWORD"),
-		},
-	}
+	App = &AppConfig{}
+	App.Port = viper.GetString("PORT")
+	App.Env = viper.GetString("ENV")
+	App.Version = viper.GetString("VERSION")
+
+	DB = &DBConfig{}
+	DB.Address = viper.GetString("DB_ADDR")
+	DB.MaxOpenConns = viper.GetInt64("DB_MAX_OPEN_CONNS")
+	DB.MaxIdleConns = viper.GetInt64("DB_MAX_IDLE_CONNS")
+	DB.MaxIdleTime = viper.GetString("DB_MAX_IDLE_TIME")
+
+	Redis = &RedisConfig{}
+	Redis.Address = viper.GetString("REDIS_ADDR")
+	Redis.Password = viper.GetString("REDIS_PASSWORD")
+	Redis.DB = viper.GetInt64("REDIS_DB")
+	Redis.Protocol = viper.GetInt64("REDIS_PROTOCOL")
+	Redis.Duration = viper.GetInt64("REDIS_DURATION")
+
+	JWT = &JWTConfig{}
+	JWT.Secret = viper.GetString("JWT_SECRET")
+	JWT.Expires = viper.GetInt64("JWT_EXPIRATIONS_IN_SECOND")
+	JWT.RefreshExpires = viper.GetInt64("REFRESH_TOKEN_EXPIRATIONS_IN_SECOND")
+
+	Cors = &CorsConfig{}
+	Cors.AllowOrigins = viper.GetString("ALLOWED_ORIGINS")
+	Cors.AllowMethods = viper.GetString("ALLOWED_METHODS")
+	Cors.AllowHeaders = viper.GetString("ALLOWED_HEADERS")
+	Cors.ContentLength = viper.GetString("CONTENT_LENGTH")
+	Cors.MaxAge = viper.GetInt("MAX_AGE")
+	Cors.AllowCredentials = viper.GetBool("ALLOW_CREDENTIALS")
+
+	Mail = &MailConfig{}
+	Mail.SMTPHost = viper.GetString("STMP_HOST")
+	Mail.SMTPPort = viper.GetInt("STMP_PORT")
+	Mail.SenderName = viper.GetString("SENDER_NAME")
+	Mail.SenderEmail = viper.GetString("SENDER_EMAIL")
+	Mail.SMTPPassword = viper.GetString("STMP_PASSWORD")
+
+	return nil
 }

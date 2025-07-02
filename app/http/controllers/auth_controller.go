@@ -58,9 +58,9 @@ func (controller *AuthController) Login(c *gin.Context) {
 		"message": "User logged in successfully",
 		"data": responses.TokenResponse{
 			AccessToken:           accessToken,
-			AccessTokenExpiresIn:  config.Envs.JWT.Expires,
+			AccessTokenExpiresIn:  config.JWT.Expires,
 			RefreshToken:          refreshToken,
-			RefreshTokenExpiresIn: config.Envs.JWT.RefreshExpires,
+			RefreshTokenExpiresIn: config.JWT.RefreshExpires,
 		},
 	})
 }
@@ -147,9 +147,9 @@ func (controller *AuthController) Refresh(c *gin.Context) {
 		"message": "Token refreshed",
 		"data": responses.TokenResponse{
 			AccessToken:           accessToken,
-			AccessTokenExpiresIn:  config.Envs.JWT.Expires,
+			AccessTokenExpiresIn:  config.JWT.Expires,
 			RefreshToken:          refreshToken,
-			RefreshTokenExpiresIn: config.Envs.JWT.RefreshExpires,
+			RefreshTokenExpiresIn: config.JWT.RefreshExpires,
 		},
 	})
 }
