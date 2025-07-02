@@ -9,6 +9,7 @@ import (
 	"unicode"
 
 	"github.com/google/uuid"
+	"github.com/rayhan889/talkz-v2/app/constants"
 	"github.com/rayhan889/talkz-v2/app/models"
 	"github.com/rayhan889/talkz-v2/app/repositories"
 	"github.com/rayhan889/talkz-v2/config"
@@ -28,6 +29,8 @@ func NewBlogService(blogRepostiory *repositories.BlogRepository, redis *redis.Cl
 	}
 }
 
+var ctx = context.Background()
+
 func (service *BlogService) GetFeeds() ([]models.Blog, error) {
 	blogs, err := service.blogRepostiory.FindAll()
 
@@ -35,18 +38,18 @@ func (service *BlogService) GetFeeds() ([]models.Blog, error) {
 		return nil, err
 	}
 
-	cachedBlogs, err := service.GetCachedBlogs("blogs:feed")
+	cachedBlogs, err := service.GetCachedBlogs(constants.FeedCacheKey)
 	if err == nil && len(cachedBlogs) > 0 {
 		return cachedBlogs, nil
 	}
 
-	service.SetCacheBlogs(blogs, "blogs:feed")
+	service.SetCacheBlogs(blogs, constants.FeedCacheKey)
 
 	return blogs, nil
 }
 
 func (service *BlogService) GetCachedBlogs(key string) ([]models.Blog, error) {
-	val, err := service.redis.Get(context.Background(), key).Result()
+	val, err := service.redis.Get(ctx, key).Result()
 
 	if err == redis.Nil {
 		return nil, err
@@ -72,7 +75,7 @@ func (service *BlogService) SetCacheBlogs(blogs []models.Blog, key string) error
 	}
 
 	ttl := time.Duration(config.Envs.Redis.Duration) * time.Minute
-	service.redis.Set(context.Background(), key, data, ttl)
+	service.redis.Set(ctx, key, data, ttl)
 
 	return nil
 }
@@ -103,8 +106,15 @@ func (service *BlogService) CreateBlog(
 	}
 
 	go func() {
-		if err := service.redis.Del(context.Background(), "blogs:feed").Err(); err != nil {
-			logger.Log.Errorf("Failed to invalidate blogs:feed cache: %v", err)
+		blogs, err := service.blogRepostiory.FindAll()
+		if err != nil {
+			logger.Log.Errorf("Failed to fetch blogs after creation: %v", err)
+			return
+		}
+		err = service.SetCacheBlogs(blogs, constants.FeedCacheKey)
+		if err != nil {
+			logger.Log.Errorf("Failed to cache blogs after creation: %v", err)
+			return
 		}
 	}()
 
@@ -113,7 +123,6 @@ func (service *BlogService) CreateBlog(
 
 func (service *BlogService) GetCountBySlug(slug string) (int64, error) {
 	blogs, err := service.blogRepostiory.FindBySlug(slug)
-	logger.Log.Infof("Blogs: %s", blogs)
 
 	if err != nil {
 		return 0, err

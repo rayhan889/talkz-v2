@@ -11,4 +11,6 @@ var (
 	InvalidAccessToken              = "Invalid access token"
 	RefreshTokenNotFound            = "Refresh token not found"
 	RefreshTokenExpired             = "Refresh token expired"
+
+	FeedCacheKey = "blogs:feed"
 )

@@ -78,7 +78,7 @@ func (service *AuthService) Register(request *requests.RegisterRequest) (*models
 
 	go func() {
 		err := service.mailService.SendMail(
-			"rynatmadja890@gmail.com",
+			user.Email,
 			"Welcome to Talkz",
 			resources.WelcomeEmailTemplate,
 			map[string]interface{}{
