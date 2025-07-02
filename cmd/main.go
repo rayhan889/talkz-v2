@@ -8,6 +8,7 @@ import (
 	"github.com/rayhan889/talkz-v2/config"
 	"github.com/rayhan889/talkz-v2/pkg/logger"
 	redisPkg "github.com/rayhan889/talkz-v2/pkg/redis"
+	"github.com/rayhan889/talkz-v2/pkg/sentry"
 	"github.com/redis/go-redis/v9"
 	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
@@ -54,6 +55,13 @@ func init() {
 		logger.Log.Fatal(err)
 	}
 	logger.Log.Info("Redis client initialized")
+
+	err = sentry.InitSentry(config.Sentry.DSN, config.App.Env)
+
+	if err != nil {
+		logger.Log.Fatal(err)
+	}
+	logger.Log.Info("Sentry initialized")
 }
 
 func main() {

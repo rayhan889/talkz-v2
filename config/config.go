@@ -48,6 +48,13 @@ type MailConfig struct {
 	SMTPPassword string
 }
 
+type SentryConfig struct {
+	DSN              string
+	Repanic          bool
+	WaitForDelivery  bool
+	TimeoutInMinutes int
+}
+
 // var Envs = LoadConfig()
 var App *AppConfig
 var DB *DBConfig
@@ -55,6 +62,7 @@ var Redis *RedisConfig
 var JWT *JWTConfig
 var Cors *CorsConfig
 var Mail *MailConfig
+var Sentry *SentryConfig
 
 func LoadConfig() error {
 	viper.AddConfigPath("../")
@@ -104,6 +112,12 @@ func LoadConfig() error {
 	Mail.SenderName = viper.GetString("SENDER_NAME")
 	Mail.SenderEmail = viper.GetString("SENDER_EMAIL")
 	Mail.SMTPPassword = viper.GetString("STMP_PASSWORD")
+
+	Sentry = &SentryConfig{}
+	Sentry.DSN = viper.GetString("SENTRY_DSN")
+	Sentry.Repanic = viper.GetBool("SENTRY_IS_REPANIC")
+	Sentry.WaitForDelivery = viper.GetBool("SENTRY_WAIT_FOR_DELIVERY")
+	Sentry.TimeoutInMinutes = viper.GetInt("SENTRY_TIMEOUT_IN_MINUTES")
 
 	return nil
 }

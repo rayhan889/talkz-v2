@@ -1,6 +1,9 @@
 package app
 
 import (
+	"time"
+
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/rayhan889/talkz-v2/app/http/middlewares"
 	"github.com/rayhan889/talkz-v2/config"
@@ -27,6 +30,12 @@ func NewApp(db *gorm.DB, client *redis.Client, dialer *gomail.Dialer) *App {
 	r.Use(gin.Recovery())
 
 	r.SetTrustedProxies(nil)
+
+	r.Use(sentrygin.New(sentrygin.Options{
+		Repanic:         config.Sentry.Repanic,
+		WaitForDelivery: config.Sentry.WaitForDelivery,
+		Timeout:         time.Duration(config.Sentry.TimeoutInMinutes) * time.Minute,
+	}))
 
 	r.Use(middlewares.SecurityHeaders())
 	r.Use(middlewares.RateLimiter())

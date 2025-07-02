@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/rayhan889/talkz-v2/app/constants"
 	"github.com/rayhan889/talkz-v2/app/exceptions"
@@ -51,6 +52,7 @@ func (controller *AuthController) Login(c *gin.Context) {
 			return
 		}
 		exceptions.InternalServerError(c, err)
+		sentry.CaptureException(err)
 		return
 	}
 
@@ -91,6 +93,7 @@ func (controller *AuthController) Register(c *gin.Context) {
 			return
 		}
 		exceptions.InternalServerError(c, err)
+		sentry.CaptureException(err)
 		return
 	}
 
@@ -140,6 +143,7 @@ func (controller *AuthController) Refresh(c *gin.Context) {
 			return
 		}
 		exceptions.InternalServerError(c, err)
+		sentry.CaptureException(err)
 		return
 	}
 

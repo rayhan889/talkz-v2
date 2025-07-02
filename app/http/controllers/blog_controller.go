@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/rayhan889/talkz-v2/app/constants"
 	"github.com/rayhan889/talkz-v2/app/exceptions"
@@ -44,6 +45,7 @@ func (controller *BlogController) Feeds(c *gin.Context) {
 
 	if err != nil {
 		exceptions.InternalServerError(c, err)
+		sentry.CaptureException(err)
 		return
 	}
 
@@ -91,6 +93,7 @@ func (controller *BlogController) Compose(c *gin.Context) {
 
 	if err != nil {
 		exceptions.InternalServerError(c, err)
+		sentry.CaptureException(err)
 		return
 	}
 
