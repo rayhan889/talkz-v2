@@ -78,7 +78,7 @@ func (service *AuthService) Register(request *requests.RegisterRequest) (*models
 
 	go func() {
 		err := service.mailService.SendMail(
-			"rynatmadja890@gmail.com",
+			user.Email,
 			"Welcome to Talkz",
 			resources.WelcomeEmailTemplate,
 			map[string]interface{}{
@@ -133,8 +133,8 @@ func (service *AuthService) RefreshToken(request *requests.RefreshTokenRequest) 
 }
 
 func (service *AuthService) GenerateAccessToken(userId string) (string, error) {
-	expTime := time.Now().Add(time.Second * time.Duration(config.Envs.JWT.Expires)).Unix()
-	secretKey := []byte(config.Envs.JWT.Secret)
+	expTime := time.Now().Add(time.Second * time.Duration(config.JWT.Expires)).Unix()
+	secretKey := []byte(config.JWT.Secret)
 
 	claims := jwt.MapClaims{
 		"sub": userId,
@@ -156,7 +156,7 @@ func (service *AuthService) GenerateAccessToken(userId string) (string, error) {
 }
 
 func (service *AuthService) GenerateRefreshToken(userId string) (*models.RefreshToken, error) {
-	expTime := time.Now().Add(time.Second * time.Duration(config.Envs.JWT.RefreshExpires))
+	expTime := time.Now().Add(time.Second * time.Duration(config.JWT.RefreshExpires))
 
 	userRefreshTokens, err := service.refreshTokenRepository.FindByUserId(userId)
 
@@ -192,7 +192,7 @@ func (service *AuthService) ValidateAccessToken(token string) (*models.User, err
 			return nil, errors.New(constants.InvalidAccessTokenSigningMethod)
 		}
 
-		return []byte(config.Envs.JWT.Secret), nil
+		return []byte(config.JWT.Secret), nil
 	})
 
 	if err != nil {

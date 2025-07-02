@@ -1,11 +1,14 @@
 package main
 
 import (
+	"log"
+
 	"github.com/rayhan889/talkz-v2/app"
 	"github.com/rayhan889/talkz-v2/app/integrations/database"
 	"github.com/rayhan889/talkz-v2/config"
 	"github.com/rayhan889/talkz-v2/pkg/logger"
 	redisPkg "github.com/rayhan889/talkz-v2/pkg/redis"
+	"github.com/rayhan889/talkz-v2/pkg/sentry"
 	"github.com/redis/go-redis/v9"
 	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
@@ -17,46 +20,29 @@ var dialer *gomail.Dialer
 
 func init() {
 	var err error
-	appConf := config.AppConfig{
-		Env: config.Envs.App.Env,
-	}
 
-	dbConf := config.DBConfig{
-		Address:      config.Envs.DB.Address,
-		MaxOpenConns: config.Envs.DB.MaxOpenConns,
-		MaxIdleConns: config.Envs.DB.MaxIdleConns,
-		MaxIdleTime:  config.Envs.DB.MaxIdleTime,
-	}
+	err = config.LoadConfig()
 
-	redisConf := config.RedisConfig{
-		Address:  config.Envs.Redis.Address,
-		Password: config.Envs.Redis.Password,
-		DB:       config.Envs.Redis.DB,
-	}
-
-	mailConfig := config.MailConfig{
-		SMTPHost:     config.Envs.Mail.SMTPHost,
-		SMTPPort:     config.Envs.Mail.SMTPPort,
-		SenderEmail:  config.Envs.Mail.SenderEmail,
-		SMTPPassword: config.Envs.Mail.SMTPPassword,
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	dialer = gomail.NewDialer(
-		mailConfig.SMTPHost,
-		mailConfig.SMTPPort,
-		mailConfig.SenderEmail,
-		mailConfig.SMTPPassword,
+		config.Mail.SMTPHost,
+		config.Mail.SMTPPort,
+		config.Mail.SenderEmail,
+		config.Mail.SMTPPassword,
 	)
 
-	logger.InitLogger(appConf.Env)
+	logger.InitLogger(config.App.Env)
 
 	logger.Log.Info("App Started")
 
 	db, err = database.CreateConnection(
-		dbConf.Address,
-		int(dbConf.MaxOpenConns),
-		int(dbConf.MaxIdleConns),
-		dbConf.MaxIdleTime,
+		config.DB.Address,
+		int(config.DB.MaxOpenConns),
+		int(config.DB.MaxIdleConns),
+		config.DB.MaxIdleTime,
 	)
 	if err != nil {
 		logger.Log.Fatal(err)
@@ -64,11 +50,18 @@ func init() {
 
 	logger.Log.Info("Database connection established")
 
-	redisClient, err = redisPkg.InitRedisClient(redisConf.Address, redisConf.Password, int(redisConf.DB))
+	redisClient, err = redisPkg.InitRedisClient(config.Redis.Address, config.Redis.Password, int(config.Redis.DB))
 	if err != nil {
 		logger.Log.Fatal(err)
 	}
 	logger.Log.Info("Redis client initialized")
+
+	err = sentry.InitSentry(config.Sentry.DSN, config.App.Env)
+
+	if err != nil {
+		logger.Log.Fatal(err)
+	}
+	logger.Log.Info("Sentry initialized")
 }
 
 func main() {

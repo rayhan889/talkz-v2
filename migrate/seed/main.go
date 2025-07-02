@@ -9,10 +9,10 @@ import (
 
 func main() {
 	dbConf := config.DBConfig{
-		Address:      config.Envs.DB.Address,
-		MaxOpenConns: config.Envs.DB.MaxOpenConns,
-		MaxIdleConns: config.Envs.DB.MaxIdleConns,
-		MaxIdleTime:  config.Envs.DB.MaxIdleTime,
+		Address:      config.DB.Address,
+		MaxOpenConns: config.DB.MaxOpenConns,
+		MaxIdleConns: config.DB.MaxIdleConns,
+		MaxIdleTime:  config.DB.MaxIdleTime,
 	}
 	db, err := database.CreateConnection(
 		dbConf.Address,

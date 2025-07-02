@@ -8,6 +8,9 @@ type (
 	}
 	BlogsResponse struct {
 		Blogs []BlogResponse `json:"blogs"`
+		Page  int            `json:"page"`
+		Limit int            `json:"limit"`
+		Total int            `json:"total"`
 	}
 	BlogResponse struct {
 		Title     string `json:"title"`

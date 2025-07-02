@@ -41,7 +41,7 @@ func (service *MailService) SendMail(
 
 	mailer := gomail.NewMessage()
 
-	mailer.SetHeader("From", config.Envs.Mail.SenderName)
+	mailer.SetHeader("From", config.Mail.SenderName)
 	mailer.SetHeader("To", to)
 	mailer.SetHeader("Subject", subject)
 	mailer.SetBody("text/html", html)

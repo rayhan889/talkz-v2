@@ -3,7 +3,9 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/gin-gonic/gin"
 	"github.com/rayhan889/talkz-v2/app/constants"
 	"github.com/rayhan889/talkz-v2/app/exceptions"
@@ -25,10 +27,25 @@ func NewBlogController(blogService *services.BlogService) *BlogController {
 }
 
 func (controller *BlogController) Feeds(c *gin.Context) {
-	blogs, err := controller.blogService.GetFeeds()
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+
+	if err != nil || page < 1 {
+		exceptions.BadRequestError(c, errors.New("invalid page number"))
+		return
+	}
+
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "5"))
+
+	if err != nil || limit < 1 {
+		exceptions.BadRequestError(c, errors.New("invalid limit number"))
+		return
+	}
+
+	blogs, total, err := controller.blogService.GetFeeds(page, limit)
 
 	if err != nil {
 		exceptions.InternalServerError(c, err)
+		sentry.CaptureException(err)
 		return
 	}
 
@@ -46,6 +63,9 @@ func (controller *BlogController) Feeds(c *gin.Context) {
 		"message": "Blogs fetched successfully",
 		"data": responses.BlogsResponse{
 			Blogs: blogResponses,
+			Page:  page,
+			Limit: limit,
+			Total: total,
 		},
 		"errors": nil,
 	})
@@ -73,6 +93,7 @@ func (controller *BlogController) Compose(c *gin.Context) {
 
 	if err != nil {
 		exceptions.InternalServerError(c, err)
+		sentry.CaptureException(err)
 		return
 	}
 
